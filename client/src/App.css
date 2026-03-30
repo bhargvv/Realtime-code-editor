@@ -1,0 +1,298 @@
+/* =========================================
+   Home Page Styling
+========================================= */
+.homePageWrapper {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a0e17 0%, #151a2a 50%, #0a0e17 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.homePageWrapper::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--primary-glow) 0%, transparent 60%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.formWrapper {
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  padding: 30px 40px;
+  border-radius: 20px;
+  width: 420px;
+  max-width: 90%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.homePageLogo {
+  width: 100%;
+  height: 100px;
+  object-fit: contain;
+  margin-bottom: 24px;
+}
+
+.mainLabel {
+  margin-bottom: 20px;
+  margin-top: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inputBox {
+  padding: 14px 16px;
+  border-radius: 10px;
+  outline: none;
+  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.inputBox::placeholder {
+  color: var(--text-secondary);
+}
+
+.inputBox:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.btn {
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.3px;
+}
+
+.joinBtn {
+  background-color: var(--primary);
+  color: #000;
+  width: 120px;
+  margin-left: auto;
+  box-shadow: 0 4px 15px var(--primary-glow);
+}
+
+.joinBtn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--primary-glow);
+}
+
+.joinBtn:active {
+  transform: translateY(0);
+}
+
+.createInfo {
+  margin: 0 auto;
+  margin-top: 15px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.createNewBtn {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.createNewBtn::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: var(--primary);
+  bottom: -2px;
+  left: 0;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+
+.createNewBtn:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+footer {
+  position: fixed;
+  bottom: 20px;
+  z-index: 10;
+  color: var(--text-secondary);
+}
+
+footer a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+footer a:hover {
+  color: var(--primary-hover);
+  text-shadow: 0 0 8px var(--primary-glow);
+}
+
+/* =========================================
+   Editor Page Styling
+========================================= */
+.mainWrap {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100vh;
+  background-color: var(--bg-dark);
+}
+
+.aside {
+  background-color: var(--surface-solid);
+  color: white;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
+  z-index: 5;
+}
+
+.asideInner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.aside h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.logoImage {
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.clientsList {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 5px;
+}
+
+/* Custom scrollbar for clients list */
+.clientsList::-webkit-scrollbar {
+  width: 6px;
+}
+.clientsList::-webkit-scrollbar-thumb {
+  background: var(--surface-hover);
+  border-radius: 10px;
+}
+
+.client {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: 500;
+  transition: transform 0.2s ease;
+  cursor: default;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.client:hover {
+  transform: scale(1.05);
+}
+
+.username {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.copyBtn {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  margin-bottom: 15px;
+}
+
+.copyBtn:hover {
+  background-color: var(--surface-hover);
+  border-color: white;
+}
+
+.leaveBtn {
+  background-color: var(--danger);
+  color: white;
+  width: 100%;
+}
+
+.leaveBtn:hover {
+  background-color: var(--danger-hover);
+  box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4);
+}
+
+.editorWrap {
+  background-color: #282a36; /* Match Dracula theme */
+}
+
+.cm-theme {
+  min-height: calc(100vh);
+  font-size: 18px;
+  font-family: 'Fira Code', 'Droid Sans Mono', monospace, monospace;
+}
+
+/* Remove default selection color from code editor if clashing */
+.cm-focused {
+  outline: none !important;
+}
