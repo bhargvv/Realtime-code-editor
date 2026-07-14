@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Client from '../components/Client';
 import Editor from '../components/Editor';
+import VoiceControls from '../components/VoiceControls';
 import { initSocket } from '../socket';
 import ACTIONS from '../Actions';
+import { useVoiceChat } from '../hooks/useVoiceChat';
 import { useLocation, useNavigate, Navigate, useParams } from 'react-router-dom';
 import '../App.css';
 import toast from 'react-hot-toast';
@@ -12,9 +14,20 @@ const EditorPage = () => {
   const codeRef = useRef(null);
   const location = useLocation();
   const { roomId } = useParams();
-  console.log('roomId', roomId);
   const reactNavigator = useNavigate();
   const [clients, setClients] = useState([]);
+  const [socketReady, setSocketReady] = useState(false);
+
+  const {
+    inVoice,
+    isMuted,
+    voiceUsers,
+    joinVoice,
+    leaveVoice,
+    toggleMute,
+    getVoiceState,
+    cleanupVoice,
+  } = useVoiceChat(socketRef, roomId, socketReady);
 
   useEffect(() => {
     const init = async () => {
@@ -32,6 +45,8 @@ const EditorPage = () => {
         roomId,
         username: location.state?.username,
       });
+
+      setSocketReady(true);
 
       //Listening for joined event
       socketRef.current.on(ACTIONS.JOINED, ({ clients, username, socketId }) => {
@@ -55,6 +70,7 @@ const EditorPage = () => {
     init();
 
     return () => {
+      setSocketReady(false);
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current.off(ACTIONS.JOINED);
@@ -73,6 +89,10 @@ const EditorPage = () => {
     }
   }
   function leaveRoom() {
+    if (inVoice) {
+      cleanupVoice();
+      socketRef.current?.emit(ACTIONS.VOICE_LEAVE, { roomId });
+    }
     reactNavigator('/');
   }
 
@@ -88,13 +108,30 @@ const EditorPage = () => {
           <h3>Connected</h3>
           <div className="clientsList">
             {
-              clients.map((client) => (
-                <Client key={client.socketId} username={client.username} />
-              ))
+              clients.map((client) => {
+                const voiceState = getVoiceState(client.socketId);
+                return (
+                  <Client
+                    key={client.socketId}
+                    username={client.username}
+                    inVoice={voiceState.inVoice}
+                    isMuted={voiceState.isMuted}
+                    isSpeaking={voiceState.isSpeaking}
+                  />
+                );
+              })
             }
           </div>
         </div>
       </div>
+      <VoiceControls
+        inVoice={inVoice}
+        isMuted={isMuted}
+        voiceCount={voiceUsers.length}
+        onJoin={joinVoice}
+        onLeave={leaveVoice}
+        onToggleMute={toggleMute}
+      />
       <button className='btn copyBtn' onClick={copyRoomId}>Copy ROOM ID</button>
       <button className='btn leaveBtn' onClick={leaveRoom}>Leave</button>
     </div>

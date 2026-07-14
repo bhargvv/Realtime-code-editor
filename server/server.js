@@ -11,6 +11,12 @@ const ACTIONS = {
     CODE_CHANGE: 'code-change',
     SYNC_CODE: 'sync-code',
     LEAVE: 'leave',
+    VOICE_JOIN: 'voice-join',
+    VOICE_LEAVE: 'voice-leave',
+    VOICE_OFFER: 'voice-offer',
+    VOICE_ANSWER: 'voice-answer',
+    VOICE_ICE_CANDIDATE: 'voice-ice-candidate',
+    VOICE_MUTE_STATE: 'voice-mute-state',
 };
 
 const server=http.createServer(app);
@@ -27,6 +33,8 @@ app.use((req,res,next)=>{
 })
 
 const userSocketMap = {};
+const voiceUsersMap = {};
+
 function getAllConnectedClients(roomId){
     return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId)=>{
         return{
@@ -36,6 +44,20 @@ function getAllConnectedClients(roomId){
     });
 }
 
+function getVoiceUsersInRoom(roomId) {
+    return getAllConnectedClients(roomId)
+        .filter(({ socketId }) => voiceUsersMap[socketId])
+        .map(({ socketId }) => ({
+            socketId,
+            isMuted: voiceUsersMap[socketId].isMuted,
+        }));
+}
+
+function broadcastVoiceState(roomId) {
+    const voiceUsers = getVoiceUsersInRoom(roomId);
+    io.to(roomId).emit(ACTIONS.VOICE_JOIN, { voiceUsers });
+}
+
 
 io.on('connection', (socket) => {
     console.log('a user connected',socket.id);
@@ -43,11 +65,13 @@ io.on('connection', (socket) => {
         userSocketMap[socket.id] = username;
         socket.join(roomId);
         const clients = getAllConnectedClients(roomId);
+        const voiceUsers = getVoiceUsersInRoom(roomId);
         clients.forEach(({socketId})=>{
             io.to(socketId).emit(ACTIONS.JOINED,{
                 clients,
                 username,
                 socketId: socket.id,
+                voiceUsers,
             })
         })
     });
@@ -61,6 +85,35 @@ io.on('connection', (socket) => {
         io.to(socketId).emit(ACTIONS.SYNC_CODE, {code})
     })
 
+    socket.on(ACTIONS.VOICE_JOIN, ({ roomId }) => {
+        voiceUsersMap[socket.id] = { isMuted: false };
+        broadcastVoiceState(roomId);
+    });
+
+    socket.on(ACTIONS.VOICE_LEAVE, ({ roomId }) => {
+        delete voiceUsersMap[socket.id];
+        broadcastVoiceState(roomId);
+    });
+
+    socket.on(ACTIONS.VOICE_MUTE_STATE, ({ roomId, isMuted }) => {
+        if (voiceUsersMap[socket.id]) {
+            voiceUsersMap[socket.id].isMuted = isMuted;
+            broadcastVoiceState(roomId);
+        }
+    });
+
+    socket.on(ACTIONS.VOICE_OFFER, ({ to, offer }) => {
+        io.to(to).emit(ACTIONS.VOICE_OFFER, { from: socket.id, offer });
+    });
+
+    socket.on(ACTIONS.VOICE_ANSWER, ({ to, answer }) => {
+        io.to(to).emit(ACTIONS.VOICE_ANSWER, { from: socket.id, answer });
+    });
+
+    socket.on(ACTIONS.VOICE_ICE_CANDIDATE, ({ to, candidate }) => {
+        io.to(to).emit(ACTIONS.VOICE_ICE_CANDIDATE, { from: socket.id, candidate });
+    });
+
     socket.on('disconnecting',()=>{
         const rooms = [...socket.rooms].filter((roomId) => roomId !== socket.id);
         rooms.forEach((roomId) => {
@@ -70,6 +123,7 @@ io.on('connection', (socket) => {
             });
         })
         delete userSocketMap[socket.id];
+        delete voiceUsersMap[socket.id];
     })
 });
 
